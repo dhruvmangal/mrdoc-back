@@ -3,6 +3,9 @@ var router = express.Router();
 var auth = require('./auth');
 const jwt = require('jsonwebtoken');
 var connection = require('../../db');
+var calendar = require('./calendar');
+var notification = require('./notification');
+var mr = require('./mr');
 const authenticateJWT = (req, res, next) => {
 
     const authHeader = req.headers.token;
@@ -27,14 +30,6 @@ router.get('/', authenticateJWT, function(req, res){
     })
 });
 
-router.get('/:id', authenticateJWT, function(req, res){
-    let id = req.params.id;
-    var sql = "SELECT * FROM doctor WHERE id='"+id+"'";
-    connection.query(sql, function (err, rows, fields) {
-        
-        res.json(rows);
-    });
-})
 
 router.put('/', authenticateJWT, function(req, res){
     let sql = "UPDATE doctor SET";
@@ -103,9 +98,11 @@ router.put('/', authenticateJWT, function(req, res){
             affectedRows: result.affectedRows
         });
     });
-})
+});
 
 router.use('/auth', auth);
-
+router.use('/calendar', calendar);
+router.use('/mr', mr);
+router.use('/notification', notification);
 module.exports = router;
 

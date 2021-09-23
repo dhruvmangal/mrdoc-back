@@ -15,6 +15,7 @@ router.use(function(req, res, next) {
     res.setHeader('Access-Control-Allow-Headers', '*');
 	next();
 });
+
 router.use('/admin', adminRouter);  
 router.use('/mr', mrRouter);
 router.use('/doctor', docRouter);

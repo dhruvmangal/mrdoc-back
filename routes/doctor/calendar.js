@@ -25,6 +25,7 @@ const authenticateJWT = (req, res, next) => {
 	}
 };
 
+
 router.post('/', authenticateJWT, function(req, res, next){
 	Date.prototype.yyyymmdd = function() {
         var mm = this.getMonth() + 1; // getMonth() is zero-based
@@ -40,7 +41,7 @@ router.post('/', authenticateJWT, function(req, res, next){
     var d = new Date();
 	var time = d.toLocaleTimeString('en-US', { hour12: false });
 	var date = d.yyyymmdd();
-	let sql = "INSERT INTO calander (mr_id, title, description, meeting_time, meeting_date, meeting_status, status, time, date) VALUES( '"+req.body.id+"', '"+req.body.val.key+"', '"+req.body.val.description+"', '"+req.body.val.time+"', '"+req.body.val.dates+"', 'scheduled', '1', '"+time+"', '"+date+"')";
+	let sql = "INSERT INTO doc_calendar (doc_id, meeting_time, meeting_date, meeting_status, title, description, status, time, date) VALUES( '"+req.body.id+"', '"+req.body.val.time+"', '"+req.body.val.dates+"', 'scheduled', '"+req.body.val.key+"', '"+req.body.val.description+"', '1', '"+time+"', '"+date+"')";
 	connection.query(sql, function (err, result) {
         if(err) throw err;
 		console.log(result.insertId);
@@ -57,7 +58,7 @@ router.post('/', authenticateJWT, function(req, res, next){
 }, function(req, res, next){
 	let status = "scheduled";	
 	let message = req.body.val.description;
-	let sql = "INSERT INTO calander_status (calander_id, status, message, time, date) VALUES('"+res.locals.result.id+"', '"+status+"', '"+message+"', '"+res.locals.result.time+"', '"+res.locals.result.date+"')";
+	let sql = "INSERT INTO doc_calendar_status (calendar_id, message, status, time, date) VALUES('"+res.locals.result.id+"', '"+message+"', '"+status+"', '"+res.locals.result.time+"', '"+res.locals.result.date+"')";
 	connection.query(sql, function (err, result) {
         if(err) throw err;
         res.json({
@@ -70,13 +71,13 @@ router.post('/', authenticateJWT, function(req, res, next){
 });
 
 router.get('/', authenticateJWT, function(req, res){
-	let sql = "SELECT * FROM calander";
+	let sql = "SELECT * FROM doc_calendar";
 	let n= 0;
 	sql+=" WHERE ";
 	if(req.body.id){
 		if(n>0)
 			sql+=" AND ";	
-		sql+= "mr_id = "+req.body.id+" ";
+		sql+= "doc_id = "+req.body.id+" ";
 		
 		n++;
 	}
@@ -87,6 +88,8 @@ router.get('/', authenticateJWT, function(req, res){
 		
 		n++;
 	}
+	
+	console.log(sql)
 	connection.query(sql, function (err, rows, fields) {
         if(err)
 			throw err;
@@ -97,7 +100,7 @@ router.get('/', authenticateJWT, function(req, res){
 		})
 		
 		rows.filter( (row)=>{
-			delete row.mr_id;
+			delete row.doc_id;
 			delete row.time;
 			delete row.title
 			return row
@@ -107,15 +110,17 @@ router.get('/', authenticateJWT, function(req, res){
     })	
 	
 });
+
+
 //gets previous meetings 
 router.get('/prev', authenticateJWT, function(req, res){
-	let sql = "SELECT * FROM calander";
+	let sql = "SELECT * FROM doc_calendar";
 	let n= 0;
 	sql+=" WHERE ";
 	if(req.body.id){
 		if(n>0)
 			sql+=" AND ";	
-		sql+= "mr_id = "+req.body.id+" ";
+		sql+= "doc_id = "+req.body.id+" ";
 		
 		n++;
 	}
@@ -136,7 +141,7 @@ router.get('/prev', authenticateJWT, function(req, res){
 		})
 		
 		rows.filter( (row)=>{
-			delete row.mr_id;
+			delete row.doc_id;
 			delete row.time;
 			delete row.title
 			return row
@@ -150,13 +155,13 @@ router.get('/prev', authenticateJWT, function(req, res){
 //get upcoming meetings
 
 router.get('/upcoming', authenticateJWT, function(req, res){
-	let sql = "SELECT * FROM calander";
+	let sql = "SELECT * FROM doc_calendar";
 	let n= 0;
 	sql+=" WHERE ";
 	if(req.body.id){
 		if(n>0)
 			sql+=" AND ";	
-		sql+= "mr_id = "+req.body.id+" ";
+		sql+= "doc_id = "+req.body.id+" ";
 		
 		n++;
 	}
@@ -177,7 +182,7 @@ router.get('/upcoming', authenticateJWT, function(req, res){
 		})
 		
 		rows.filter( (row)=>{
-			delete row.mr_id;
+			delete row.doc_id;
 			delete row.time;
 			delete row.title
 			return row
@@ -189,8 +194,9 @@ router.get('/upcoming', authenticateJWT, function(req, res){
 });
 
 
+
 router.get('/:id', authenticateJWT, function(req, res){
-	let sql = "SELECT * FROM calander where id = '"+req.params.id+"'";
+	let sql = "SELECT * FROM doc_calendar where id = '"+req.params.id+"'";
 	connection.query(sql, function (err, rows, fields) {
 		res.json(rows);	
 	});
@@ -198,7 +204,7 @@ router.get('/:id', authenticateJWT, function(req, res){
 });
 
 router.delete('/:id', authenticateJWT, function(req, res){
-	let sql="DELETE FROM calander where id = '"+req.params.id+"'";
+	let sql="DELETE FROM doc_calendar where id = '"+req.params.id+"'";
 	connection.query( sql, function(err, result){
         if(err) throw err;
         res.json({
@@ -210,7 +216,7 @@ router.delete('/:id', authenticateJWT, function(req, res){
 });
 
 router.put('/:id', authenticateJWT, function(req, res){
-	let sql = "UPDATE calander SET";
+	let sql = "UPDATE doc_calendar SET";
 	let n=0;
 	if(req.body.val.date){
 		let date  = moment(req.body.val.date).format("YYYY-MM-DD");
@@ -265,7 +271,7 @@ router.post('/status/:id', authenticateJWT, function(req, res, next){
 	var time = d.toLocaleTimeString('en-US', { hour12: false });
 	var date = d.yyyymmdd();
 	
-	let sql = "INSERT INTO calander_status (calander_id, status, message, time, date) VALUES('"+req.params.id+"', '"+req.body.status+"', '"+req.body.message+"', '"+time+"', '"+date+"')";
+	let sql = "INSERT INTO doc_calendar_status (calendar_id, message, status, time, date) VALUES('"+req.params.id+"', '"+req.body.message+"', '"+req.body.status+"', '"+time+"', '"+date+"')";
 	connection.query(sql, function (err, result) {
         if(err) throw err;
         res.locals.result={
@@ -276,7 +282,7 @@ router.post('/status/:id', authenticateJWT, function(req, res, next){
 	
 	next();
 }, function(req, res, next){
-	let sql= "UPDATE calander SET meeting_status='"+req.body.status+"' WHERE id='"+req.params.id+"'"; 
+	let sql= "UPDATE doc_calendar SET meeting_status='"+req.body.status+"' WHERE id='"+req.params.id+"'"; 
 	connection.query(sql, function (err, result) {
         if(err) throw err;
         res.json({
@@ -288,14 +294,11 @@ router.post('/status/:id', authenticateJWT, function(req, res, next){
 });
 
 router.get('/status/:id', authenticateJWT, function(req, res){
-	let sql ="SELECT * FROM calander_status where calander_id ='"+req.params.id+"' ";
+	let sql ="SELECT * FROM doc_calendar_status where calendar_id ='"+req.params.id+"' ";
 	connection.query(sql, function (err, rows, fields) {
 		if(err) throw err;
 		res.json(rows);	
 	});
 });
-
-
-
 
 module.exports = router;
