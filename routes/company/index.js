@@ -2,7 +2,8 @@ var express = require('express');
 var router = express.Router();
 var auth = require('./auth');
 var connection = require('../../db');
-
+var mr = require('./mr');
+var calendar = require('./calendar');
 const accessTokenSecret = 'youraccesstokensecret';
 
 const authenticateJWT = (req, res, next) => {
@@ -91,4 +92,9 @@ router.put('/', function(){
     })
 })
 
+
+
+router.use('/auth', auth);
+router.use('/calendar', calander);
+router.use('/mr', mr);
 module.exports = router;

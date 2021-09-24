@@ -22,7 +22,7 @@ router.post('/login',  function(req, res){
 
 
 router.post('/register', function(req, res){
-    const { name, phone, email, password, status } = req.body;
+    const { name, company_id, phone, email, password, status } = req.body;
     Date.prototype.yyyymmdd = function() {
         var mm = this.getMonth() + 1; // getMonth() is zero-based
         var dd = this.getDate();
@@ -37,7 +37,7 @@ router.post('/register', function(req, res){
     var d = new Date();
     var time = d.toLocaleTimeString('en-US', { hour12: false });
     var date = d.yyyymmdd();
-    var sql= "INSERT INTO mr (name, phone, email, password, status, time, date) VALUES('"+name+"', '"+phone+"', '"+email+"', '"+password+"', '1','"+time+"', '"+date+"')";
+    var sql= "INSERT INTO mr (name, company_id, phone, email, password, status, time, date) VALUES('"+name+"', '"+company_id+"','"+phone+"', '"+email+"', '"+password+"', '1','"+time+"', '"+date+"')";
     
     connection.query(sql, function (err, result) {
         if(err) throw err;
